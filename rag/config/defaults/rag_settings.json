@@ -1,0 +1,64 @@
+{
+  "enabled": true,
+  "enable_agent_orchestration": true,
+  "auto_trigger_threshold": 5,
+  "context_limit": 3,
+  "relevance_threshold": 0.6,
+  "cache_queries": true,
+  "exclude_patterns": [],
+  "orchestration": {
+    "enable_maf": true,
+    "parallel_threshold_confidence": 0.7,
+    "decomposition_complexity_threshold": 0.6,
+    "maf_timeout": 30.0
+  },
+  "maf": {
+    "enabled": true,
+    "mode": "parallel",
+    "agents": ["debugger", "developer", "reviewer", "tester", "architect", "documenter", "optimizer"],
+    "fallback_to_rag": true,
+    "show_notifications": true,
+    "execution_strategy": "always_parallel",
+    "timeout_seconds": 30,
+    "max_parallel_agents": 3,
+    "workflows": {
+      "enable_workflows": true,
+      "debugging": {
+        "enabled": true,
+        "agents": ["debugger", "developer"],
+        "strategy": "sequential",
+        "timeout": 45
+      },
+      "code_review": {
+        "enabled": true,
+        "agents": ["developer", "reviewer", "tester"],
+        "strategy": "parallel",
+        "timeout": 60
+      },
+      "architecture": {
+        "enabled": true,
+        "agents": ["architect", "developer", "reviewer"],
+        "strategy": "sequential",
+        "timeout": 60
+      },
+      "optimization": {
+        "enabled": true,
+        "agents": ["optimizer", "reviewer", "tester"],
+        "strategy": "parallel",
+        "timeout": 45
+      },
+      "comprehensive": {
+        "enabled": false,
+        "agents": ["architect", "developer", "reviewer", "tester", "documenter"],
+        "strategy": "sequential",
+        "timeout": 90
+      }
+    }
+  },
+  "metadata": {
+    "last_updated": "2025-10-30T00:00:00Z",
+    "version": "1.2.2",
+    "description": "RAG enhancement settings with embedded multi-agent framework (v1.2.0)",
+    "features": ["embedded_maf", "parallel_execution", "all_7_agents", "graceful_fallback"]
+  }
+}

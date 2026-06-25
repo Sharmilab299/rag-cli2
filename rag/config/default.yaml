@@ -1,0 +1,544 @@
+# RAG-CLI Default Configuration
+# ==============================
+
+# System Settings
+system:
+  name: "RAG-CLI"
+  version: "0.1.0"
+  debug: false
+  data_dir: "./data"
+  log_dir: "./logs"
+
+# Operation Mode Configuration
+mode:
+  # Options: claude_code, standalone, hybrid
+  # - claude_code: Use Claude Code's internal interface (no API key needed)
+  # - standalone: Use Anthropic API directly (requires API key)
+  # - hybrid: Auto-detect based on environment
+  operation: hybrid
+
+  # Claude Code specific settings
+  claude_code:
+    format_context: true
+    include_metadata: true
+    max_context_length: 10000
+
+# Document Processing
+document_processing:
+  chunk_size: 500  # tokens
+  chunk_overlap: 100  # tokens
+  separators:
+    - "\n\n"
+    - "\n"
+    - ". "
+    - " "
+    - ""
+  supported_formats:
+    - ".md"
+    - ".txt"
+    - ".pdf"
+    - ".docx"
+    - ".html"
+  add_contextual_headers: true
+  metadata_fields:
+    - "source"
+    - "title"
+    - "section"
+    - "timestamp"
+    - "doc_type"
+
+# Embedding Configuration
+embeddings:
+  # Upgraded from all-MiniLM-L6-v2 to bge-small-en-v1.5 for better quality
+  # MTEB benchmark shows 15-20% improvement in retrieval accuracy at same 384 dims
+  model_name: "BAAI/bge-small-en-v1.5"
+  dimensions: 384
+  batch_size: 32
+  normalize: true
+  cache_size: 1000  # LRU cache size
+  device: "cpu"  # or "cuda" if GPU available
+  max_seq_length: 512  # bge-small supports longer sequences
+
+# Vector Store Configuration
+vector_store:
+  backend: "faiss"
+  index_type: "auto"  # auto, flat, hnsw, ivf
+  index_params:
+    flat:
+      metric: "l2"  # l2 or ip (inner product)
+    hnsw:
+      M: 32  # number of connections
+      ef_construction: 200
+      ef_search: 100
+    ivf:
+      nlist: 100
+      nprobe: 10
+  save_path: "./data/vectors/vectors.index"
+  metadata_path: "./data/vectors/metadata.json"
+  auto_save: true
+  backup_enabled: true
+  backup_count: 3
+
+# Retrieval Configuration
+retrieval:
+  # Hybrid search weights
+  vector_weight: 0.7
+  keyword_weight: 0.3
+
+  # Two-stage retrieval
+  initial_candidates: 10
+  final_results: 5
+
+  # Reranking
+  use_reranker: true
+  reranker_model: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  reranker_batch_size: 16
+
+  # HyDE (Hypothetical Document Embeddings)
+  # Improves retrieval accuracy by 10-15% for technical queries
+  use_hyde: true
+
+  # Search parameters
+  min_score_threshold: 0.5
+  timeout_seconds: 10
+
+  # Semantic caching (similarity-based, not exact match)
+  cache_enabled: true
+  cache_ttl_seconds: 3600  # 1 hour
+  cache_similarity_threshold: 0.95  # Minimum similarity for cache hit
+
+# Online Documentation Retrieval
+online_docs:
+  enabled: true
+
+  # Fallback triggers
+  triggers:
+    min_confidence_score: 0.65  # Fetch online if max local score below this
+    min_result_count: 3  # Fetch online if fewer results than this
+    detect_error_messages: true  # Fetch online when error patterns detected
+    detect_version_keywords: true  # Fetch online when query has "latest", "2024", "2025", "new", "recent"
+
+  # API Keys and Authentication
+  api_keys:
+    github_token: ""  # Optional: Personal access token for GitHub documentation access
+    stackoverflow_key: ""  # Optional: Stack Overflow API key for higher rate limits
+
+  # Sources configuration
+  sources:
+    github:
+      enabled: true
+      rate_limit: 5000  # requests per hour
+      timeout: 10  # seconds
+      search_repos:
+        - "python/cpython"  # Python official docs
+        - "microsoft/TypeScript"
+        - "facebook/react"
+        - "django/django"
+      search_topics:
+        - "documentation"
+        - "tutorial"
+        - "examples"
+
+    stackoverflow:
+      enabled: true
+      rate_limit: 300  # requests per day (free tier)
+      timeout: 10
+      min_score: 5  # Only index answers with score >= 5
+      max_age_days: 730  # Only content from last 2 years
+
+    readthedocs:
+      enabled: true
+      rate_limit: 100  # requests per hour
+      timeout: 15
+      priority_domains:
+        - "readthedocs.io"
+        - "readthedocs.org"
+
+    official_docs:
+      enabled: true
+      rate_limit: 100  # requests per hour
+      timeout: 15
+      allowed_domains:
+        - "docs.python.org"
+        - "developer.mozilla.org"
+        - "go.dev"
+        - "doc.rust-lang.org"
+        - "docs.oracle.com/javase"
+
+  # Caching configuration
+  cache:
+    enabled: true
+    ttl_hours: 24  # How long to keep cached online content
+    max_size_mb: 500  # Maximum cache size
+    backend: "sqlite"  # sqlite or file
+    path: "./data/cache/online_docs.db"
+
+  # Content processing
+  content:
+    max_page_size_kb: 500  # Skip pages larger than this
+    extract_code_blocks: true
+    preserve_links: true
+    clean_html: true
+    markdown_output: true
+
+  # Indexing behavior
+  indexing:
+    auto_index_online_results: true  # Automatically add to vector store
+    deduplication: true
+    batch_size: 10
+    max_daily_additions: 1000  # Prevent index bloat
+
+  # Error tracking
+  error_tracking:
+    enabled: true
+    persistent_log: "./config/error_history.json"
+    repeated_error_threshold: 3  # Trigger online search after N occurrences
+    track_solutions: true
+
+# Claude Integration
+claude:
+  model: "claude-haiku-4-5-20251001"
+  # Alternative models (uncomment to use)
+  # model: "claude-3-5-sonnet-20241022"
+  # model: "claude-3-opus-20240229"
+
+  api_key_env: "ANTHROPIC_API_KEY"  # Environment variable name
+
+  # API settings
+  max_tokens: 1024
+  temperature: 0.7
+  stream: true
+  timeout_seconds: 30
+
+  # Retry configuration
+  max_retries: 3
+  retry_delay: 1  # seconds
+  exponential_backoff: true
+
+  # Response settings
+  include_citations: true
+  citation_format: "[Source: {filename}]"
+
+  # Structured Prompts (2025 best practice)
+  # Auto-detects query type (how-to, troubleshooting, etc.) and uses optimized templates
+  use_structured_prompts: true
+
+  # Prompt template (fallback when structured prompts disabled)
+  system_prompt: |
+    You are a helpful assistant with access to retrieved documentation.
+    Answer questions based only on the provided context.
+    Always cite your sources using the format [Source: filename].
+    If the context doesn't contain enough information, clearly state this.
+
+  # Cost tracking
+  track_usage: true
+  warn_cost_threshold: 1.00  # dollars
+
+# Monitoring Configuration
+monitoring:
+  # Logging
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  log_format: "json"  # json or text
+  log_file: "./logs/rag-cli.log"
+  log_rotation:
+    max_bytes: 10485760  # 10MB
+    backup_count: 5
+
+  # Metrics
+  track_metrics: true
+  metrics_port: 9090  # Prometheus metrics port
+
+  # TCP Server (PowerShell monitoring)
+  tcp_server:
+    enabled: true
+    host: "127.0.0.1"
+    port: 9999
+    endpoints:
+      - "/status"
+      - "/logs"
+      - "/metrics"
+      - "/health"
+
+  # Performance tracking
+  track_latency: true
+  latency_buckets:
+    - 0.1
+    - 0.5
+    - 1.0
+    - 2.5
+    - 5.0
+    - 10.0
+
+# Plugin Configuration (Claude Code)
+plugin:
+  enabled: true
+
+  # Agent Skills
+  skills:
+    rag_retrieval:
+      enabled: true
+      auto_invoke: true
+      progressive_disclosure: true
+
+  # Hooks
+  hooks:
+    user_prompt_submit:
+      enabled: true
+      intercept_all: false
+      pattern: "*"
+
+  # Commands
+  commands:
+    search:
+      enabled: true
+      shortcut: "/search"
+    enable:
+      enabled: true
+      shortcut: "/rag:enable"
+    disable:
+      enabled: true
+      shortcut: "/rag:disable"
+
+  # Settings
+  settings_path: ".claude/settings.json"
+  auto_enable_on_start: false
+
+# Testing Configuration
+testing:
+  golden_dataset: "./tests/golden_dataset.json"
+  ragas_metrics:
+    - "context_precision"
+    - "context_recall"
+    - "faithfulness"
+    - "answer_relevancy"
+  min_scores:
+    context_precision: 0.8
+    context_recall: 0.8
+    faithfulness: 0.7
+    answer_relevancy: 0.75
+
+# Performance Targets
+performance:
+  targets:
+    vector_search_ms: 100
+    end_to_end_seconds: 5
+    embedding_speed: 0.5  # seconds per 100 docs
+    index_speed: 1000  # docs per minute
+    memory_limit_gb: 2
+
+# Development Settings
+development:
+  hot_reload: false
+  verbose_errors: true
+  profile_enabled: false
+  mock_claude_api: false  # Use mock responses for testing
+  sample_data_path: "./tests/sample_data"
+
+# Security Settings
+security:
+  validate_inputs: true
+  max_query_length: 1000
+  max_document_size_mb: 50
+  allowed_file_extensions:
+    - ".md"
+    - ".txt"
+    - ".pdf"
+    - ".docx"
+    - ".html"
+  sanitize_html: true
+  log_queries: false  # Set to false in production for privacy
+
+# Query Classification Configuration
+# ==================================
+# Intelligent query understanding for adaptive RAG behavior
+query_classification:
+  enabled: true
+
+  # Classification thresholds
+  confidence_threshold: 0.3  # Minimum confidence to detect an intent
+  min_classification_confidence: 0.5  # Minimum confidence to trigger RAG
+
+  # Intent detection
+  detect_intents:
+    - "code_explanation"
+    - "troubleshooting"
+    - "how_to"
+    - "best_practices"
+    - "comparison"
+    - "technical_docs"
+    - "conceptual"
+    - "general_qa"
+
+  # Entity extraction
+  extract_entities: true
+  extract_depth: true  # Detect beginner/intermediate/advanced level
+
+  # Non-technical query filtering
+  filter_non_technical: true
+  skip_greetings: true
+  skip_meta_queries: true
+
+# Query Enhancement Configuration
+# ================================
+# Expands queries for better retrieval through synonyms and acronym resolution
+query_enhancement:
+  enabled: true
+
+  # Expansion settings
+  enable_expansion: true
+  max_expansions_per_term: 3
+
+  # Acronym resolution
+  enable_acronym_resolution: true
+  custom_acronyms: {}  # Add project-specific acronyms here
+
+  # Entity extraction
+  extract_programming_languages: true
+  extract_frameworks: true
+  extract_libraries: true
+
+# Best Practices Detection Configuration
+# =======================================
+# Specialized detection for best practices, recommendations, and anti-patterns
+best_practices:
+  enabled: true
+
+  # Detection threshold
+  confidence_threshold: 0.5
+
+  # Source prioritization
+  prioritize_authoritative: true
+  require_official_docs: true  # For prescriptive queries
+
+  # Detection types
+  detect_types:
+    - "prescriptive"      # "how should I..."
+    - "evaluative"        # "is it good to..."
+    - "comparative"       # "X vs Y best practices"
+    - "anti_pattern"      # what NOT to do
+    - "general"           # general best practices
+
+  # Context indicators (boost confidence when present)
+  context_keywords:
+    - "production"
+    - "scale"
+    - "performance"
+    - "security"
+    - "maintainable"
+    - "robust"
+    - "efficient"
+    - "professional"
+
+# Adaptive Retrieval Configuration
+# =================================
+# Dynamic weight adjustment based on query intent for optimal retrieval
+adaptive_retrieval:
+  enabled: true
+
+  # Weight profiles per intent type
+  # Format: vector_weight / keyword_weight (must sum to 1.0)
+  weight_profiles:
+    troubleshooting:
+      vector_weight: 0.4
+      keyword_weight: 0.6
+      reason: "Errors benefit from exact keyword matching"
+
+    conceptual:
+      vector_weight: 0.8
+      keyword_weight: 0.2
+      reason: "Concepts need semantic understanding"
+
+    best_practices:
+      vector_weight: 0.8
+      keyword_weight: 0.2
+      reason: "Best practices are conceptual"
+
+    technical_docs:
+      vector_weight: 0.6
+      keyword_weight: 0.4
+      reason: "Balanced for API documentation"
+
+    code_explanation:
+      vector_weight: 0.75
+      keyword_weight: 0.25
+      reason: "Semantic understanding of code"
+
+    how_to:
+      vector_weight: 0.65
+      keyword_weight: 0.35
+      reason: "Balanced for procedural content"
+
+    comparison:
+      vector_weight: 0.7
+      keyword_weight: 0.3
+      reason: "Semantic comparison with keyword support"
+
+    general_qa:
+      vector_weight: 0.7
+      keyword_weight: 0.3
+      reason: "Default balanced approach"
+
+  # Dynamic top-k adjustment
+  adaptive_top_k:
+    enabled: true
+    simple_query_k: 3      # For straightforward queries
+    complex_query_k: 10    # For complex/multi-part queries
+    complexity_threshold: 15  # words
+
+  # Source diversity
+  ensure_source_diversity: true
+  max_per_source: 3  # Maximum results from single source
+
+# Prompt Template Configuration
+# ==============================
+# Structured templates for different query types
+prompt_templates:
+  enabled: true
+
+  # Template selection
+  auto_detect_type: true
+  fallback_to_general: true
+
+  # Templates available
+  templates:
+    - "general_qa"
+    - "technical_docs"
+    - "code_explanation"
+    - "troubleshooting"
+    - "how_to"
+    - "comparison"
+    - "best_practices"
+
+  # Template-specific settings
+  best_practices_template:
+    include_alternatives: true
+    include_pitfalls: true
+    require_examples: true
+    prioritize_official_sources: true
+
+  troubleshooting_template:
+    include_diagnosis: true
+    include_prevention: true
+    include_verification_steps: true
+
+  # Citation format
+  citation_format: "[Source: {filename}]"
+  include_line_numbers: false
+  include_relevance_scores: true  # Show confidence scores
+  include_authority_indicators: true  # Show [Official], [Tutorial], etc.
+
+# RAG Settings (User-configurable at runtime)
+# ============================================
+# These can be modified via hooks or commands
+rag_settings:
+  enabled: true
+  auto_trigger_threshold: 5  # minimum words in query
+  context_limit: 5  # max documents to retrieve
+  relevance_threshold: 0.6  # minimum relevance score
+
+  # Exclusion patterns (case-insensitive substrings)
+  exclude_patterns: []
+
+  # Classification overrides
+  classification_confidence_threshold: 0.3
+  min_classification_confidence: 0.5

@@ -1,0 +1,109 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-cli"
+version = "2.0.0"
+description = "Local RAG system with embedded Multi-Agent Framework for Claude Code plugin"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Sharmila B"}
+]
+keywords = [
+    "rag",
+    "retrieval",
+    "augmented-generation",
+    "vector-search",
+    "semantic-search",
+    "multi-agent",
+    "orchestration",
+    "documentation",
+    "knowledge-base",
+    "claude-code",
+    "plugin"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+]
+
+
+[project.scripts]
+rag-index = "rag_cli.cli.index:main"
+rag-retrieve = "rag_cli.cli.retrieve:main"
+rag-monitor = "rag_cli_plugin.services.__main__:main"
+rag-cli-install = "rag_cli_plugin.lifecycle.installer:main"
+rag-cli-update = "rag_cli_plugin.lifecycle.updater:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["rag_cli*"]
+exclude = ["*.tests", "*.tests.*", "tests.*", "tests", "__pycache__", "*.pyc"]
+
+[tool.setuptools.package-data]
+"*" = [
+    ".claude-plugin/**/*",
+    "config/**/*",
+    "scripts/**/*"
+]
+
+[tool.isort]
+profile = "black"
+multi_line_mode = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 120
+
+[tool.black]
+line-length = 120
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "--verbose --strict-markers"
+
+[tool.pylint.messages_control]
+max-line-length = 120

@@ -1,0 +1,94 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data directories (keep structure, ignore contents)
+# Recursively ignore all documents and subdirectories
+data/documents/**
+!data/documents/
+!data/documents/.gitkeep
+data/vectors/*
+!data/vectors/.gitkeep
+data/cache/*
+!data/cache/.gitkeep
+*.db
+
+# Configuration (ignore user configs, keep defaults)
+config/*.json
+!config/defaults/
+config/pids/
+config/backups/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Environment variables
+.env
+.env.local
+
+# User-specific files
+.cursor/
+.mcp.json
+.claude/
+/CLAUDE.md
+/requirements-lock.txt
+nul
+/config/langflow-1.6.5-constraints.txt
+/docs/LANGFLOW_COMPAT.md
+/DEPENDENCY_UPGRADE_SUMMARY.md
+/UPGRADE_VERIFICATION.md
+# Local plugin marketplace files
+.claude-plugin/marketplace.json
+.claude-plugin/plugin.json
+
+# Tavily usage tracking
+config/tavily_usage.json
+
+# Test databases
+test/chroma.sqlite3

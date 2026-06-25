@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push *)",
+      "Read(//Users/sharmilabogadhi/.ssh/**)",
+      "Bash(ssh -o StrictHostKeyChecking=no -T git@github.com)",
+      "Bash(git remote *)",
+      "Bash(git fetch *)",
+      "Bash(git merge *)",
+      "Bash(git credential-osxkeychain *)",
+      "Bash(open \"/Users/sharmilabogadhi/Downloads/rag-cli/rag\")",
+      "Bash(gh auth *)",
+      "Bash(git --version)",
+      "Bash(HOMEBREW_NO_AUTO_UPDATE=1 brew install gh)",
+      "Bash(HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_REQUIRE_TAP_TRUST=1 brew install gh)",
+      "Bash(rm -rf \"rag/.git\" \"RAG chroma health/.git\")",
+      "Bash(find . -maxdepth 3 -name .git -type d)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}
